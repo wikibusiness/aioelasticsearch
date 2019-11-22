@@ -20,16 +20,23 @@ class AIOHttpConnection(Connection):
         verify_certs=False,
         maxsize=10,
         headers=None,
+        http_compress=False,
         *,
         loop,
         **kwargs
     ):
-        super().__init__(host=host, port=port, use_ssl=use_ssl, **kwargs)
+        super().__init__(host=host,
+                         port=port,
+                         use_ssl=use_ssl,
+                         http_compress=http_compress,
+                         **kwargs)
 
         if headers is None:
             headers = {}
         self.headers = headers
         self.headers.setdefault('Content-Type', 'application/json')
+
+        self.http_compress = http_compress
 
         self.loop = loop
 
@@ -98,6 +105,7 @@ class AIOHttpConnection(Connection):
                     url,
                     data=body,
                     headers=self._build_headers(headers),
+                    compress=self.http_compress,
                     timeout=timeout or self.timeout) as response:
                 raw_data = await response.text()
 
